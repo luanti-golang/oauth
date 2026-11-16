@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/minetest-go/oauth"
+	"github.com/luanti-golang/oauth"
 )
 
 const BaseURL = "http://localhost:8080"

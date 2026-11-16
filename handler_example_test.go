@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/minetest-go/oauth"
+	"github.com/luanti-golang/oauth"
 )
 
 func ExampleOauthHandler() {

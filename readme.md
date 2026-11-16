@@ -1,10 +1,10 @@
-OAuth provider library for the minetest community
+OAuth provider library for the luanti community
 
-![](https://github.com/minetest-go/oauth/workflows/test/badge.svg)
+![](https://github.com/luanti-golang/oauth/workflows/test/badge.svg)
 
-Docs: https://pkg.go.dev/github.com/minetest-go/oauth
+Docs: https://pkg.go.dev/github.com/luanti-golang/oauth
 
-Example implementation: https://pkg.go.dev/github.com/minetest-go/oauth#example-OauthHandler
+Example implementation: https://pkg.go.dev/github.com/luanti-golang/oauth#example-OauthHandler
 
 # Overview
 

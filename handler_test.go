@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/minetest-go/oauth"
+	"github.com/luanti-golang/oauth"
 	"github.com/stretchr/testify/assert"
 )
 
