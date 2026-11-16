@@ -1,3 +1,5 @@
+// Deprecated: this module has moved to github.com/luanti-golang/oauth
+
 module github.com/minetest-go/oauth
 
 go 1.21.5
