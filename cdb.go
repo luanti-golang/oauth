@@ -2,7 +2,6 @@ package oauth
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"mime/multipart"
 	"net/http"
@@ -39,24 +38,9 @@ func (o *CDBOauth) RequestAccessToken(code string, cfg *OAuthConfig) (string, er
 		return "", err
 	}
 	req.Header.Set("Content-Type", w.FormDataContentType())
+	req.Header.Set("Accept", "application/json")
 
-	client := http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return "", fmt.Errorf("unexpected status-code: %d", resp.StatusCode)
-	}
-
-	tokenData := AccessTokenResponse{}
-	err = json.NewDecoder(resp.Body).Decode(&tokenData)
-	if err != nil {
-		return "", err
-	}
-
-	return tokenData.AccessToken, nil
+	return requestAccessToken(cfg, req)
 }
 
 func (o *CDBOauth) RequestUserInfo(access_token string, cfg *OAuthConfig) (*OauthUserInfo, error) {
@@ -69,15 +53,8 @@ func (o *CDBOauth) RequestUserInfo(access_token string, cfg *OAuthConfig) (*Oaut
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Authorization", "Bearer "+access_token)
 
-	client := http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
 	userData := CDBUserResponse{}
-	err = json.NewDecoder(resp.Body).Decode(&userData)
+	_, err = doJSON(cfg, "userinfo", req, &userData)
 	if err != nil {
 		return nil, err
 	}
@@ -89,25 +66,16 @@ func (o *CDBOauth) RequestUserInfo(access_token string, cfg *OAuthConfig) (*Oaut
 	}
 
 	// fetch user profile
-	req, err = http.NewRequest("GET", fmt.Sprintf("https://content.luanti.org/api/users/%s/", userData.Username), nil)
+	req, err = http.NewRequest("GET", fmt.Sprintf("https://content.luanti.org/api/users/%s/", url.PathEscape(userData.Username)), nil)
 	if err != nil {
 		return nil, fmt.Errorf("new user-profile request error: %v", err)
 	}
 	req.Header.Set("Accept", "application/json")
 
-	resp, err = client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("get user-profile error: %v", err)
-	}
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("unexpected status-code from user-profile api: %d", resp.StatusCode)
-	}
-	defer resp.Body.Close()
-
 	userProfile := CDBUser{}
-	err = json.NewDecoder(resp.Body).Decode(&userProfile)
+	_, err = doJSON(cfg, "userprofile", req, &userProfile)
 	if err != nil {
-		return nil, fmt.Errorf("user-profile response error: %v", err)
+		return nil, err
 	}
 
 	if userProfile.ProfilePicURL != "" {

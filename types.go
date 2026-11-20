@@ -1,11 +1,16 @@
 package oauth
 
 import (
+	"log/slog"
 	"net/http"
 )
 
 type AccessTokenResponse struct {
-	AccessToken string `json:"access_token"`
+	AccessToken      string `json:"access_token"`
+	TokenType        string `json:"token_type"`
+	Scope            string `json:"scope"`
+	Error            string `json:"error"`
+	ErrorDescription string `json:"error_description"`
 }
 
 type OauthUserInfo struct {
@@ -21,6 +26,8 @@ type OAuthConfig struct {
 	ClientID    string
 	Secret      string
 	CallbackURL string
+	// optional logger, defaults to slog.Default()
+	Logger *slog.Logger
 }
 
 type ProviderType string

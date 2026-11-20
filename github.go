@@ -44,20 +44,7 @@ func (o *GithubOauth) RequestAccessToken(code string, cfg *OAuthConfig) (string,
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 
-	client := http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	tokenData := AccessTokenResponse{}
-	err = json.NewDecoder(resp.Body).Decode(&tokenData)
-	if err != nil {
-		return "", err
-	}
-
-	return tokenData.AccessToken, nil
+	return requestAccessToken(cfg, req)
 }
 
 func (o *GithubOauth) RequestUserInfo(access_token string, cfg *OAuthConfig) (*OauthUserInfo, error) {
@@ -70,15 +57,8 @@ func (o *GithubOauth) RequestUserInfo(access_token string, cfg *OAuthConfig) (*O
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Authorization", "Bearer "+access_token)
 
-	client := http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
 	userData := GithubUserResponse{}
-	err = json.NewDecoder(resp.Body).Decode(&userData)
+	_, err = doJSON(cfg, "userinfo", req, &userData)
 	if err != nil {
 		return nil, err
 	}

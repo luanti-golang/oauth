@@ -2,7 +2,6 @@ package oauth
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -40,46 +39,20 @@ func (o *DiscordOauth) RequestAccessToken(code string, cfg *OAuthConfig) (string
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	client := http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", err
-	}
-	if resp.StatusCode != 200 {
-		return "", fmt.Errorf("invalid status code in token-response: %d", resp.StatusCode)
-	}
-	defer resp.Body.Close()
-
-	tokenData := AccessTokenResponse{}
-	err = json.NewDecoder(resp.Body).Decode(&tokenData)
-	if err != nil {
-		return "", err
-	}
-
-	return tokenData.AccessToken, nil
+	return requestAccessToken(cfg, req)
 }
 
 func (o *DiscordOauth) RequestUserInfo(access_token string, cfg *OAuthConfig) (*OauthUserInfo, error) {
 	req, err := http.NewRequest("GET", "https://discord.com/api/users/@me", nil)
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Authorization", "Bearer "+access_token)
 
-	client := http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("invalid status code in response: %d", resp.StatusCode)
-	}
-
 	userData := DiscordResponse{}
-	err = json.NewDecoder(resp.Body).Decode(&userData)
+	_, err = doJSON(cfg, "userinfo", req, &userData)
 	if err != nil {
 		return nil, err
 	}

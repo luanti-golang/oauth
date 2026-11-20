@@ -4,10 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strconv"
 )
 
@@ -42,47 +40,20 @@ func (o *MesehubOauth) RequestAccessToken(code string, cfg *OAuthConfig) (string
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 
-	client := http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", err
-	}
-	if resp.StatusCode != 200 {
-		io.Copy(os.Stdout, resp.Body)
-		return "", fmt.Errorf("invalid status code in token-response: %d", resp.StatusCode)
-	}
-	defer resp.Body.Close()
-
-	tokenData := AccessTokenResponse{}
-	err = json.NewDecoder(resp.Body).Decode(&tokenData)
-	if err != nil {
-		return "", err
-	}
-
-	return tokenData.AccessToken, nil
+	return requestAccessToken(cfg, req)
 }
 
 func (o *MesehubOauth) RequestUserInfo(access_token string, cfg *OAuthConfig) (*OauthUserInfo, error) {
 	req, err := http.NewRequest("GET", "https://git.minetest.land/api/v1/user", nil)
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Authorization", "Bearer "+access_token)
 
-	client := http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("invalid status code in response: %d", resp.StatusCode)
-	}
-	defer resp.Body.Close()
-
 	userData := MesehubUserResponse{}
-	err = json.NewDecoder(resp.Body).Decode(&userData)
+	_, err = doJSON(cfg, "userinfo", req, &userData)
 	if err != nil {
 		return nil, err
 	}
